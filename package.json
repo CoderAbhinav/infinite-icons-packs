@@ -1,0 +1,32 @@
+{
+  "name": "infinite-icons-packs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build pipeline that normalizes open-source icon sets into WordPress 7.1 Icon API compatible packs for the Infinite Icons plugin.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "fetch": "node src/fetch.mjs",
+    "build": "node src/build.mjs",
+    "validate:wp": "node scripts/validate-kses-wp.mjs",
+    "upstream:check": "node src/upstream-check.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "clipper-lib": "^6.4.2",
+    "element-to-path": "^1.2.1",
+    "fit-curve": "^0.2.0",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
+    "svgo": "^4.1.0",
+    "svgpath": "^2.6.0",
+    "svgson": "^5.3.1",
+    "yazl": "^2.5.1"
+  }
+}

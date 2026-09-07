@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build all packs
+        run: npm run build
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: dist/report/
+          if-no-files-found: ignore
+      - name: Create GitHub Release with pack zips and index.json
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.zip
+            dist/index.json
+          generate_release_notes: true
+      - name: Publish index.json to main (dist-index/index.json, served via jsDelivr)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          mkdir -p dist-index
+          cp dist/index.json dist-index/index.json
+          git add dist-index/index.json
+          git commit -m "Publish pack index for ${{ github.ref_name }}" || echo "index unchanged"
+          git push origin main

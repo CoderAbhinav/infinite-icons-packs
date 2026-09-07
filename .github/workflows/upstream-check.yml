@@ -1,0 +1,54 @@
+name: Upstream check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compare pinned versions with npm
+        id: check
+        run: npm run upstream:check
+      - name: Build with the new versions
+        if: steps.check.outputs.changed == 'true'
+        id: build
+        continue-on-error: true
+        run: npm run build
+      - name: Upload validation report
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: dist/report/
+          if-no-files-found: ignore
+      - name: Open pull request
+        if: steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/upstream-bump
+          title: 'chore: bump upstream icon set versions'
+          commit-message: 'chore: bump upstream icon set versions'
+          add-paths: upstream-versions.json
+          labels: upstream
+          body: |
+            Automated upstream version bump.
+
+            Build with the new versions: **${{ steps.build.outcome }}**.
+            Download the `validation-report` artifact from this workflow run and review
+            `dist/report/<pack>.html` (50 worst visual diffs) before merging.
+
+            Remember to bump `PIPELINE_REVISION` in `packs.config.mjs` only when the pipeline
+            itself changed; upstream bumps alone produce a new `<upstream>+ii.<n>` version automatically.
