@@ -1,5 +1,141 @@
 {
   "schema": 1,
-  "generated": "2026-09-07T00:00:00Z",
-  "packs": []
+  "generated": "2026-09-08T16:21:23Z",
+  "packs": [
+    {
+      "slug": "fontawesome",
+      "label": "Font Awesome Free",
+      "description": "The internet's icon library, in solid, regular and brand styles.",
+      "version": "7.3.1+ii.1",
+      "icon_count": 2883,
+      "variants": [
+        "",
+        "regular",
+        "brands"
+      ],
+      "license": "CC-BY-4.0 AND OFL-1.1 AND MIT",
+      "requires_plugin": ">=1.0.0",
+      "size_bytes": 2209751,
+      "sha256": "428d79f7d14fd4e04a3ee082acd279b82ab41937295e42ed72928b59492fb37e",
+      "url": "https://github.com/CoderAbhinav/infinite-icons-packs/releases/download/v1.0.0/fontawesome-7.3.1-ii.1.zip",
+      "preview": [
+        "house",
+        "user",
+        "gear",
+        "heart",
+        "star",
+        "envelope",
+        "magnifying-glass",
+        "check"
+      ]
+    },
+    {
+      "slug": "heroicons",
+      "label": "Heroicons",
+      "description": "Beautiful hand-crafted SVG icons by the makers of Tailwind CSS.",
+      "version": "2.2.0+ii.1",
+      "icon_count": 1288,
+      "variants": [
+        "",
+        "solid",
+        "mini",
+        "micro"
+      ],
+      "license": "MIT",
+      "requires_plugin": ">=1.0.0",
+      "size_bytes": 752016,
+      "sha256": "35d12cb20c9371bc216276d20091c893351fb1022cfd677bbab9f03bb055ef73",
+      "url": "https://github.com/CoderAbhinav/infinite-icons-packs/releases/download/v1.0.0/heroicons-2.2.0-ii.1.zip",
+      "preview": [
+        "home",
+        "user",
+        "cog-6-tooth",
+        "heart",
+        "star",
+        "envelope",
+        "magnifying-glass",
+        "check"
+      ]
+    },
+    {
+      "slug": "material",
+      "label": "Material Icons",
+      "description": "Google's Material Design icons, in filled, outlined and round styles.",
+      "version": "0.14.15+ii.1",
+      "icon_count": 6366,
+      "variants": [
+        "",
+        "outlined",
+        "rounded"
+      ],
+      "license": "Apache-2.0",
+      "requires_plugin": ">=1.0.0",
+      "size_bytes": 3231120,
+      "sha256": "c5f1bc2a1afe334fb5fa58065eb484513c7ccf2071504deaee9d47e78415fb86",
+      "url": "https://github.com/CoderAbhinav/infinite-icons-packs/releases/download/v1.0.0/material-0.14.15-ii.1.zip",
+      "preview": [
+        "home",
+        "person",
+        "settings",
+        "favorite",
+        "star",
+        "mail",
+        "search",
+        "check"
+      ]
+    },
+    {
+      "slug": "phosphor",
+      "label": "Phosphor Icons",
+      "description": "A flexible icon family, in regular, bold and filled weights.",
+      "version": "2.1.1+ii.1",
+      "icon_count": 4536,
+      "variants": [
+        "",
+        "bold",
+        "fill"
+      ],
+      "license": "MIT",
+      "requires_plugin": ">=1.0.0",
+      "size_bytes": 2627546,
+      "sha256": "bc4a87b2f787c53c1f03160a166adf35ac82410387695f935ced0cd8f4780939",
+      "url": "https://github.com/CoderAbhinav/infinite-icons-packs/releases/download/v1.0.0/phosphor-2.1.1-ii.1.zip",
+      "preview": [
+        "house",
+        "user",
+        "gear",
+        "heart",
+        "star",
+        "envelope",
+        "magnifying-glass",
+        "check"
+      ]
+    },
+    {
+      "slug": "tabler",
+      "label": "Tabler Icons",
+      "description": "Over 5000 free MIT-licensed high-quality SVG icons for you to use in your web projects.",
+      "version": "3.46.0+ii.1",
+      "icon_count": 6184,
+      "variants": [
+        "",
+        "filled"
+      ],
+      "license": "MIT",
+      "requires_plugin": ">=1.0.0",
+      "size_bytes": 4311687,
+      "sha256": "dd7a67d211b4029c4fcbead79efae1b92f4ba8620d0c525126b89aca97f923a5",
+      "url": "https://github.com/CoderAbhinav/infinite-icons-packs/releases/download/v1.0.0/tabler-3.46.0-ii.1.zip",
+      "preview": [
+        "home",
+        "user",
+        "settings",
+        "heart",
+        "star",
+        "mail",
+        "search",
+        "check"
+      ]
+    }
+  ]
 }
