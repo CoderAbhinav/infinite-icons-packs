@@ -13,6 +13,25 @@ plugin through jsDelivr:
 https://cdn.jsdelivr.net/gh/CoderAbhinav/infinite-icons-packs@main/dist-index/index.json
 ```
 
+## Packs
+
+<!-- pack-table:start -->
+
+| Pack | Slug | Icons | Variants | License | Zip | Elementor CSS (gzip) | Mean visual diff |
+|---|---|--:|---|---|--:|--:|--:|
+| **Lucide** (bundled) | `lucide` | 1,815 | _(default)_ | ISC | 1.24 MB | 307 KB | 0.0011% |
+| Material Icons | `material` | 6,366 | _(default)_, outlined, rounded | Apache-2.0 | 3.08 MB | 626 KB | 0.0107% |
+| Heroicons | `heroicons` | 1,288 | _(default)_, solid, mini, micro | MIT | 0.72 MB | 164 KB | 0.0029% |
+| Tabler Icons | `tabler` | 6,184 | _(default)_, filled | MIT | 4.11 MB | 954 KB | 0.0016% |
+| Font Awesome Free | `fontawesome` | 2,883 | _(default)_, regular, brands | CC-BY-4.0 AND OFL-1.1 AND MIT | 2.11 MB | 572 KB | 0.0001% |
+| Phosphor Icons | `phosphor` | 4,536 | _(default)_, bold, fill | MIT | 2.51 MB | 570 KB | 0.0000% |
+| | | **23,072** | | | **13.76 MB** | | |
+
+Built from the versions pinned in [`upstream-versions.json`](upstream-versions.json). Lucide is bundled inside
+the plugin, so it is not listed in `index.json`; the other five are downloaded on demand.
+
+<!-- pack-table:end -->
+
 ## Why a pipeline at all
 
 WordPress core sanitizes every registered icon with `wp_kses()` against a fixed allowlist:
@@ -77,6 +96,7 @@ npm run build                 # all packs → dist/*.zip, dist/index.json, dist/
 npm run build lucide          # one pack
 node src/build.mjs lucide --limit=50 --skip-visual   # quick iteration
 npm run upstream:check        # bump upstream-versions.json to the latest npm versions
+node scripts/pack-table.mjs   # refresh the pack table in this README from dist/report/
 ```
 
 Upstream packages are installed into `.cache/upstream/` at the versions pinned in
@@ -98,6 +118,15 @@ uses `-` where the version string uses `+`):
     ├── elementor.css    .ii-<slug> base class + one mask-image class per icon
     └── icons.json       {"icons":[…]} for Elementor's icon picker (fetchJson)
 ```
+
+Two files in a pack are much larger than the icons themselves: `manifest.json` (1.8 MB for
+Tabler) and `elementor/elementor.css` (8.6 MB for Tabler, 954 KB gzipped, comfortably under
+the 1.5 MB budget that would force a per-variant split). Anything validating an extracted
+pack must size-cap `icons/*.svg` only -- a blanket per-file limit will reject these two.
+
+`node scripts/previews.mjs` writes `dist/previews/<slug>/` with each pack's eight preview
+icons, released as `previews.zip`. The plugin vendors them so its Packs screen can show what
+a pack looks like before it has been downloaded, with no network request.
 
 Pack version = `<upstream semver>+ii.<PIPELINE_REVISION>`; bump `PIPELINE_REVISION` in
 `packs.config.mjs` whenever the pipeline output changes for the same upstream version.

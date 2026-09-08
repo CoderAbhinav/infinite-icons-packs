@@ -24,6 +24,12 @@ jobs:
         run: npm run build
         env:
           RELEASE_TAG: ${{ github.ref_name }}
+      - name: Check the README pack table is up to date
+        run: node scripts/pack-table.mjs --check
+      - name: Bundle pack previews for the plugin
+        run: |
+          node scripts/previews.mjs
+          cd dist && zip -qr previews.zip previews
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4

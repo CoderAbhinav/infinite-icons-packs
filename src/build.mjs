@@ -50,21 +50,47 @@ async function buildPack( slug, opts ) {
 	const failures = [];
 	const notes = [];
 
-	// 1. Collect sources per variant.
+	// 1. Collect sources per variant, then resolve name collisions.
+	//
+	//    A name derived from a variant suffix can collide with a real upstream icon name:
+	//    Material ships an icon literally called "insert_chart_outlined" as well as
+	//    "insert_chart", whose outlined variant also wants "insert-chart-outlined". Every icon
+	//    keeps its natural name where it can; the loser of a clash takes "base--variant", which
+	//    no upstream name in any pack can produce (none contain a double hyphen). Variants are
+	//    ordered default-first in the config, so the default family always keeps its names.
 	let sources = [];
 	for ( const variant of pack.variants ) {
 		const dir = path.join( pkgDir, variant.dir );
 		for ( const f of readdirSync( dir ).filter( ( x ) => x.endsWith( '.svg' ) ).sort() ) {
 			const raw = f.slice( 0, -4 );
 			if ( pack.skip.includes( raw ) ) continue;
-			const base = pack.rename ? pack.rename( raw ) : raw;
-			sources.push( {
-				base,
-				name: variant.key ? `${ base }-${ variant.key }` : base,
-				variant,
-				svg: readFileSync( path.join( dir, f ), 'utf8' ),
-			} );
+			// Some packs put the variant in the file name (Phosphor: bold/heart-bold.svg);
+			// recover the base name first so keywords and labels line up across variants.
+			let base = variant.strip && raw.endsWith( variant.strip ) ? raw.slice( 0, -variant.strip.length ) : raw;
+			base = pack.rename ? pack.rename( base ) : base;
+			const natural = variant.key ? `${ base }-${ variant.key }` : base;
+			sources.push( { base, natural, name: natural, variant, svg: readFileSync( path.join( dir, f ), 'utf8' ) } );
 		}
+	}
+
+	const naturalNames = new Set( sources.map( ( s ) => s.natural ) );
+	const taken = new Set();
+	for ( const s of sources ) {
+		if ( ! taken.has( s.natural ) ) {
+			taken.add( s.natural );
+			continue;
+		}
+		if ( ! s.variant.key ) {
+			throw new Error( `Duplicate icon name "${ s.natural }" within the default variant of ${ pack.slug }` );
+		}
+		let name = `${ s.base }--${ s.variant.key }`;
+		let n = 2;
+		while ( taken.has( name ) || naturalNames.has( name ) ) {
+			name = `${ s.base }--${ s.variant.key }-${ n++ }`;
+		}
+		s.name = name;
+		taken.add( name );
+		notes.push( `"${ s.natural }" (${ s.variant.dir }) is also a real icon name; this variant is named "${ name }"` );
 	}
 
 	// 2. Fold alias files (identical content under another name) into keywords.
@@ -119,15 +145,28 @@ async function buildPack( slug, opts ) {
 			continue;
 		}
 		let ratio = 0;
+		const exception = pack.visualExceptions?.[ s.name ];
 		if ( ! opts.skipVisual ) {
 			const cmp = compareSvgs( s.svg, result.svg );
 			ratio = cmp.ratio;
 			if ( ! cmp.ok ) {
-				failures.push( { name: s.name, stage: 'visual', message: cmp.reason ?? `pixel diff ${ ( cmp.ratio * 100 ).toFixed( 2 ) }% exceeds ${ MAX_DIFF_RATIO * 100 }%` } );
+				const detail = cmp.reason ?? `pixel diff ${ ( cmp.ratio * 100 ).toFixed( 2 ) }% exceeds ${ MAX_DIFF_RATIO * 100 }%`;
+				if ( exception ) {
+					result.warnings.push( `known visual difference: ${ exception } (${ detail })` );
+					notes.push( `${ s.name }: ${ detail } — accepted: ${ exception }` );
+				} else {
+					failures.push( { name: s.name, stage: 'visual', message: detail } );
+				}
+			} else if ( exception ) {
+				notes.push( `${ s.name } is listed in visualExceptions but is now within tolerance; remove the entry` );
 			}
 		}
 		const keywords = new Set(
-			[ ...( keywordMap[ s.base ] ?? [] ), ...( aliasKeywords.get( s.base ) ?? [] ).flatMap( ( a ) => [ a, a.replace( /-/g, ' ' ) ] ) ]
+			[
+				...( keywordMap[ s.base ] ?? [] ),
+				...( aliasKeywords.get( s.base ) ?? [] ).flatMap( ( a ) => [ a, a.replace( /-/g, ' ' ) ] ),
+				...( s.name !== s.natural ? [ s.natural, s.natural.replace( /-/g, ' ' ) ] : [] ),
+			]
 				.map( ( k ) => String( k ).toLowerCase().trim() )
 				.filter( ( k ) => k && k !== s.base && k !== s.base.replace( /-/g, ' ' ) )
 		);
@@ -210,6 +249,12 @@ async function buildPack( slug, opts ) {
 	if ( failures.length > 30 ) console.log( `   … ${ failures.length - 30 } more (see dist/report/${ slug }.json)` );
 	for ( const n of notes.slice( 0, 10 ) ) console.log( `   ℹ ${ n }` );
 
+	if ( pack.bundled ) {
+		// Shipped inside the plugin, so it is never downloaded. The zip is still built and
+		// attached to the release; the plugin build pulls its bundled copy from there.
+		return { entry: null, failures, summary };
+	}
+
 	const tag = process.env.RELEASE_TAG || 'v0.0.0-dev';
 	const entry = {
 		slug,
@@ -243,11 +288,15 @@ async function main() {
 	let failed = 0;
 	for ( const slug of slugs ) {
 		const { entry, failures } = await buildPack( slug, opts );
-		entries.push( entry );
+		if ( entry ) entries.push( entry );
 		failed += failures.length;
 	}
 	const index = writeIndex( path.join( DIST_DIR, 'index.json' ), entries );
-	console.log( `\nindex.json: ${ index.packs.length } pack(s) → ${ path.join( DIST_DIR, 'index.json' ) }` );
+	const bundled = slugs.filter( ( s ) => PACKS[ s ].bundled );
+	console.log(
+		`\nindex.json: ${ index.packs.length } downloadable pack(s) → ${ path.join( DIST_DIR, 'index.json' ) }` +
+		( bundled.length ? ` (${ bundled.join( ', ' ) } bundled in the plugin, not listed)` : '' )
+	);
 	if ( failed ) {
 		console.error( `\nBUILD FAILED: ${ failed } validation failure(s). See dist/report/*.json and *.html.` );
 		process.exit( 1 );

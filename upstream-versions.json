@@ -1,3 +1,8 @@
 {
-  "lucide-static": "1.42.0"
+  "lucide-static": "1.42.0",
+  "@material-design-icons/svg": "0.14.15",
+  "heroicons": "2.2.0",
+  "@tabler/icons": "3.46.0",
+  "@fortawesome/fontawesome-free": "7.3.1",
+  "@phosphor-icons/core": "2.1.1"
 }

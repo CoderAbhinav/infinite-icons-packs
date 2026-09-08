@@ -21,6 +21,10 @@ jobs:
       - run: npm test
       - name: Build all packs (kses + visual + schema + name validation)
         run: npm run build
+      - name: Check the README pack table is up to date
+        run: node scripts/pack-table.mjs --check
+      - name: Extract pack previews
+        run: node scripts/previews.mjs
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
